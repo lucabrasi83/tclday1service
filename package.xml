@@ -1,0 +1,20 @@
+
+<package>
+    <auto-start>true</auto-start>
+    <dependencies>
+        <dependency>
+            <group>com.anuta.ncx.packages</group>
+            <name>servicemodel</name>
+            <order>0</order>
+            <version>6.0.5.0</version>
+        </dependency>
+    </dependencies>
+    <deploy-on-agent>false</deploy-on-agent>
+    <description>TCLDAY0CONFIG Service</description>
+    <module-name>tclday0config</module-name>
+    <name>TCLDAY0CONFIG Service</name>
+    <ncx-version>[6.0.3,)</ncx-version>
+    <order>-1</order>
+    <type>SERVICE_MODEL</type>
+    <version>6.0.4.4</version>
+</package>

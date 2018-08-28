@@ -1,0 +1,2568 @@
+module tclday0config {
+  yang-version 1.1;
+  namespace "http://anutanetworks.com/tclday0config";
+  prefix tclday0config;
+
+  import controller {
+    prefix ac;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import service-manager {
+    prefix sm;
+  }
+  import ncx-extensions {
+    prefix n-ext;
+  }
+  import basicDeviceConfigs {
+    prefix bdc;
+  }
+  import dns {
+    prefix dns;
+  }
+  import ncx-ui-extensions {
+    prefix n-ext-ui;
+  }
+  import acl {
+    prefix acl;
+  }
+  import l3features {
+    prefix l3;
+  }
+  import interface {
+    prefix if;
+  }
+  import ncx-types {
+    prefix nct;
+  }
+
+  organization
+    "Anuta Networks";
+  description
+    "This module contains a collection of YANG definitions for 
+     device-onboarding and day1 configuration ";
+
+  revision 2016-06-16 {
+    description
+      "Initial revision";
+  }
+
+  typedef action-type {
+    type enumeration {
+      enum "permit";
+      enum "deny";
+    }
+  }
+
+  typedef route-map-condition-types {
+    type enumeration {
+      enum "interface";
+      enum "tag";
+      enum "acl";
+      enum "prefix-list";
+      enum "source-protocol";
+      enum "community";
+      enum "metric";
+      enum "as-path";
+      enum "next-hop";
+    }
+  }
+
+  typedef flag {
+    type enumeration {
+      enum "enable";
+      enum "disable";
+    }
+  }
+
+  typedef match-type-def {
+    type enumeration {
+      enum "match-any";
+      enum "match-all";
+    }
+  }
+
+  typedef route-map-set-types {
+    type enumeration {
+      enum "local-preference";
+      enum "metric";
+      enum "tag";
+      enum "community";
+      enum "next-hop";
+      enum "as-path-prepend";
+    }
+  }
+
+  typedef permission-type {
+    type enumeration {
+      enum "RO";
+      enum "RW";
+    }
+  }
+
+  typedef policy-map-type {
+    type enumeration {
+      enum "control-plane";
+      enum "network-qos";
+      enum "qos";
+      enum "queuing";
+    }
+  }
+
+  typedef source-condition-type {
+    type enumeration {
+      enum "any";
+      enum "cidr";
+      //enum "objectgroup";
+      enum "host";
+      //enum "address";
+      //enum "networkobject";
+    }
+  }
+
+  typedef match-packets-type {
+    type enumeration {
+      enum "dscp";
+      enum "fragments";
+      enum "log";
+      enum "log-input";
+      enum "option";
+      enum "precedence";
+      enum "time-range";
+      enum "tos";
+      enum "ttl";
+    }
+  }
+
+  typedef string-no-space {
+    type string {
+      pattern "^(\\S*)$";
+    }
+  }
+
+  typedef string-no-lead-trail-space {
+    type string {
+      //pattern "^(\\S?)(?!\\s)(.*)(\\S+)$";
+      pattern "^(\\S?)(.*)(\\S+)$";
+    }
+  }
+
+  grouping hostname-def {
+    leaf hostname {
+      type string-no-space;
+      description
+        "Enter Device Hostname";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:hostname/hostname";
+    }
+  }
+
+  grouping tftp-def {
+    leaf tftp-src-interface {
+      type leafref {
+        path "/ac:devices/ac:device[ac:id=current()/../../device-ip]/if:interfaces/if:interface/if:name";
+      }
+      description
+        "Enter TFTP Source Interface";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:tftp/tftp-src-interface";
+    }
+  }
+
+  grouping eem-scripts-def {
+    container eem-script {
+      container eem-if-errors {
+        list interface {
+          key "if-tag";
+          leaf if-tag {
+            type string-no-space;
+            // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-if-errors/interface/if-tag";
+            description
+              "Enter EEM Interface Error check script Interface Tag";
+          }
+          leaf interface-name {
+            type leafref {
+              path "/ac:devices/ac:device[ac:id=current()/../../../../../device-ip]/if:interfaces/if:interface/if:name";
+            }
+            // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-if-errors/interface/interface-name";
+            description
+              "Select EEM Interface Error check script Physical Interface Name";
+          }
+          leaf correlate {
+            type string;
+            // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-if-errors/interface/correlate";
+            description
+              "Enter EEM Interface Error check script Correlate Tag";
+            default "event if_1";
+          }
+          leaf variable1 {
+            type string;
+            // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-if-errors/interface/variable1";
+            description
+              "Enter EEM Interface Error check script Environment Variable";
+            default "$_interface_name";
+          }
+          leaf variable2 {
+            type string;
+            // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-if-errors/interface/variable2";
+            description
+              "Enter EEM Interface Error check script Environment Variable";
+            default "$_interface_delta_value";
+          }
+          leaf variable3 {
+            type string;
+            // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-if-errors/interface/variable3";
+            description
+              "Enter EEM Interface Error check script Environment Variable";
+            default "$_interface_value";
+          }
+        }
+      }
+      container eem-zscaler {
+        leaf enable-eem-zscaler {
+          type boolean;
+          description
+            "Enable EEM Zscaler Scripts";
+        }
+        leaf zscaler-track-list {
+          type uint16 {
+            range "1..1000";
+          }
+          description
+            "Enter Zscaler Track List Number";
+          default "456";
+        }
+      }
+      container eem-bgp-adj {
+        leaf enable-bgp-adj-eem {
+          type boolean;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-bgp-adj/enable-bgp-adj-eem";
+          description
+            "Enable EEM Script BGP Adjacency status check";
+        }
+        leaf variable1 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-bgp-adj/variable1";
+          description
+            "Enter EEM Script BGP Adjacency status check Environment Variable";
+          default "$_syslog_msg";
+        }
+        leaf variable2 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-bgp-adj/variable2";
+          description
+            "Enter EEM Script BGP Adjacency status check Environment Variable";
+          default "$_regexp_result";
+        }
+        leaf variable3 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-bgp-adj/variable3";
+          description
+            "Enter EEM Script BGP Adjacency status check Environment Variable";
+          default "$id";
+        }
+      }
+      container eem-eigrp-adj {
+        leaf enable-eigrp-adj-eem {
+          type boolean;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-eigrp-adj/enable-eigrp-adj-eem";
+          description
+            "Enable EEM Script EIGRP Adjacency check";
+        }
+        leaf variable1 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-eigrp-adj/variable1";
+          description
+            "Enter EEM Script EIGRP Adjacency check Environment Variable";
+          default "$_syslog_msg";
+        }
+        leaf variable2 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-eigrp-adj/variable2";
+          description
+            "Enter EEM Script EIGRP Adjacency check Environment Variable";
+          default "$_regexp_result";
+        }
+        leaf variable3 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-eigrp-adj/variable3";
+          description
+            "Enter EEM Script EIGRP Adjacency check Environment Variable";
+          default "$id";
+        }
+      }
+      container eem-ospf-adj {
+        leaf enable-ospf-adj-eem {
+          type boolean;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-ospf-adj/enable-ospf-adj-eem";
+          description
+            "Enable EEM Script OSPF Adjacency check";
+        }
+        leaf variable1 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-ospf-adj/variable1";
+          description
+            "Enter EEM Script OSPF Adjacency check Environment Variable";
+          default "$_syslog_msg";
+        }
+        leaf variable2 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-ospf-adj/variable2";
+          description
+            "Enter EEM Script OSPF Adjacency check Environment Variable";
+          default "$_regexp_result";
+        }
+        leaf variable3 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-ospf-adj/variable3";
+          description
+            "Enter EEM Script OSPF Adjacency check Environment Variable";
+          default "$id";
+        }
+      }
+      container eem-cpu-threshold {
+        leaf rising-threshold {
+          type uint16 {
+            range "1..100";
+          }
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-cpu-threshold/rising-threshold";
+          description
+            "Enter CPU Rising Thereshold Value";
+        }
+        leaf rising-threshold-interval {
+          type uint32 {
+            range "5..86400";
+          }
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-cpu-threshold/rising-threshold-interval";
+          description
+            "Enter CPU Rising Thereshold Interval";
+        }
+        leaf falling-threshold {
+          type uint16 {
+            range "1..100";
+          }
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-cpu-threshold/falling-threshold";
+          description
+            "Enter CPU Falling Threshold Value";
+        }
+        leaf falling-threshold-interval {
+          type uint32 {
+            range "5..86400";
+          }
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-cpu-threshold/falling-threshold-interval";
+          description
+            "Enter CPU Falling Threshold Interval";
+        }
+        leaf variable1 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-cpu-threshold/variable1";
+          description
+            "Enter EEM Script CPU Load check Environment Variable";
+          default "$_syslog_msg";
+        }
+        leaf variable2 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-cpu-threshold/variable2";
+          description
+            "Enter EEM Script CPU Load check Environment Variable";
+          default "$_regexp_result";
+        }
+        leaf variable3 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-cpu-threshold/variable3";
+          description
+            "Enter EEM Script CPU Load check Environment Variable";
+          default "$id";
+        }
+      }
+      container eem-mem-threshold {
+        leaf enable-mem-threshold-eem {
+          type boolean;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-mem-threshold/enable-mem-threshold-eem";
+          description
+            "Enable EEM Script Memory Utilization Check";
+        }
+        leaf variable1 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-mem-threshold/variable1";
+          description
+            "Enter EEM Script Memory Utilization check Environment Variable";
+          default "$_snmp_oid_val";
+        }
+        leaf variable2 {
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/eem-script/eem-mem-threshold/variable2";
+          description
+            "Enter EEM Script Memory Utilization check Environment Variable";
+          default "$_snmp_oid_val";
+        }
+      }
+    }
+  }
+
+  grouping netflow-def {
+    container netflow {
+      container flow-exports {
+        leaf legacy-netflow {
+          type boolean;
+          description
+            "By enabling this option, legacy netflow commands will be configured/pushed";
+          default "false";
+          //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/legacy-netflow";
+        }
+        leaf source {
+          type leafref {
+            path "/ac:devices/ac:device[ac:id=current()/../../../../device-ip]/if:interfaces/if:interface/if:name";
+          }
+          description
+            "Select Legacy Netflow Source Interface";
+          when " ../legacy-netflow = \"true\"";
+          //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/source";
+        }
+        leaf interface-names {
+          type boolean;
+          description
+            "Enable interface-names in netflow";
+          when " ../legacy-netflow = \"true\"";
+          //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/interface-names";
+        }
+        leaf version {
+          type enumeration {
+            enum "1";
+            enum "5";
+            enum "9";
+          }
+          description
+            "Specify the version number";
+          when "../legacy-netflow = \"true\"";
+          //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/version";
+        }
+        list destinations {
+          key "destination-ip-address";
+          leaf destination-ip-address {
+            type inet:ipv4-address;
+            description
+              "Specify the Destination IP address";
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/destinations/destination-ip-address";
+          }
+          leaf port {
+            type uint32;
+            description
+              "UDP/SCTP port number";
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/destinations/port";
+          }
+        }
+        list flow-export {
+          key "name";
+          leaf sequence-number {
+            type string;
+            description
+              "sequence";
+            default "50";
+            config false;
+          }
+          leaf name {
+            type string-no-space;
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/flow-export/name";
+            description
+              "Enter Netflow Export Name";
+            mandatory true;
+          }
+          leaf description {
+            type string;
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/flow-export/description";
+            description
+              "string";
+          }
+          leaf destination {
+            type inet:ipv4-address;
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/flow-export/destination";
+            description
+              "Enter Netflow Export Destination IP Address";
+          }
+          leaf source {
+            type leafref {
+              path "/ac:devices/ac:device[ac:id=current()/../../../../../device-ip]/if:interfaces/if:interface/if:name";
+            }
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/flow-export/source";
+            description
+              "Select Netflow Export Source Interface Name";
+          }
+          leaf vrf {
+            type leafref {
+              path "/ac:devices/ac:device[ac:id=current()/../../../../../device-ip]/l3:vrfs/l3:vrf/l3:name";
+            }
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/flow-export/vrf";
+            description
+              "Select Netflow Export Source Inteface VRF";
+          }
+          leaf udp-port-value {
+            type uint32 {
+              range "1..65535";
+            }
+            description
+              "Enter Netflow Export UDP Port Value";
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/flow-export/udp-port-value";
+          }
+          leaf template-timeout {
+            type uint32 {
+              range "1..86400";
+            }
+            description
+              "Resend flow exporter data configuration based on timeout";
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/flow-export/template-timeout";
+          }
+          list options {
+            key "option";
+            leaf sequence-number {
+              type string;
+              description
+                "sequence";
+              default "51";
+              config false;
+            }
+            leaf option {
+              type enumeration {
+                enum "application-attributes";
+                enum "application-table";
+                enum "c3pl-class-table";
+                enum "c3pl-policy-table";
+                enum "exporter-stats";
+                enum "inspect-class-table";
+                enum "inspect-ext-event-table";
+                enum "inspect-protocol-table";
+                enum "inspect-zonepair-table";
+                enum "interface-table";
+                enum "metadata-version-table";
+                enum "sampler-table";
+                enum "sub-application-table";
+                enum "vrf-table";
+              }
+              description
+                "Netflow Export Options\n";
+              //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-exports/flow-export/options/option";
+            }
+          }
+        }
+      }
+      container flow-records {
+        list flow-record {
+          key "name";
+          leaf sequence-number {
+            type string;
+            description
+              "sequence";
+            default "52";
+            config false;
+          }
+          leaf name {
+            type string-no-space;
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/name";
+            description
+              "Enter Netflow Record Name";
+            mandatory true;
+          }
+          leaf description {
+            type string;
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/description";
+            description
+              "string";
+          }
+          leaf record-type {
+            type enumeration {
+              enum "performance-monitor";
+              enum "mace";
+            }
+            description
+              "Select Netflow Record Type";
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/record-type";
+          }
+          container collect {
+            container ipv4 {
+              list ipv4-options {
+                key "name";
+                leaf sequence-number {
+                  type string;
+                  description
+                    "sequence";
+                  default "53";
+                  config false;
+                }
+                leaf name {
+                  type string;
+                  description
+                    "Netflow Record Collect Options Name
+                     This is an internal field for Anuta NCX
+                    ";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/ipv4/ipv4-options/name";
+                }
+                leaf ipv4-option {
+                  type enumeration {
+                    enum "dscp";
+                    enum "ip";
+                    enum "source";
+                    enum "destination";
+                    enum "id";
+                  }
+                  description
+                    "dscp
+                     ip
+                    ";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/ipv4/ipv4-options/ipv4-option";
+                }
+                leaf option {
+                  type enumeration {
+                    enum "mask";
+                    enum "address";
+                    enum "prefix";
+                  }
+                  description
+                    "mask
+                     address
+                     prefix
+                    ";
+                  when " ../ipv4-option = 'source' or ../ipv4-option = 'destination'";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/ipv4/ipv4-options/option";
+                }
+              }
+            }
+            container interface {
+              list interface-options {
+                key "name";
+                leaf sequence-number {
+                  type string;
+                  description
+                    "sequence";
+                  default "54";
+                  config false;
+                }
+                leaf name {
+                  type string;
+                  description
+                    "string";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/interface/interface-options/name";
+                }
+                leaf interface-option {
+                  type enumeration {
+                    enum "input";
+                    enum "output";
+                  }
+                  description
+                    "input
+                     output
+                    ";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/interface/interface-options/interface-option";
+                }
+              }
+            }
+            container application {
+              list application-options {
+                key "name";
+                leaf sequence-number {
+                  type string;
+                  description
+                    "sequence";
+                  default "55";
+                  config false;
+                }
+                leaf name {
+                  type string;
+                  description
+                    "string";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/application/application-options/name";
+                }
+                leaf application-option {
+                  type enumeration {
+                    enum "name";
+                    enum "dns";
+                  }
+                  description
+                    "name
+                     dns
+                    ";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/application/application-options/application-option";
+                }
+              }
+            }
+            container counter {
+              list counter-options {
+                key "name";
+                leaf sequence-number {
+                  type string;
+                  description
+                    "sequence";
+                  default "56";
+                  config false;
+                }
+                leaf name {
+                  type string;
+                  description
+                    "string";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/counter/counter-options/name";
+                }
+                leaf counter-option {
+                  type enumeration {
+                    enum "bytes";
+                    enum "packets";
+                  }
+                  description
+                    "bytes
+                     packets
+                    ";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/counter/counter-options/counter-option";
+                }
+              }
+            }
+            container art {
+              list art-options {
+                key "name";
+                leaf sequence-number {
+                  type string;
+                  description
+                    "sequence";
+                  default "57";
+                  config false;
+                }
+                leaf name {
+                  type string;
+                  description
+                    "string";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/art/art-options/name";
+                }
+                leaf art-option {
+                  type enumeration {
+                    enum "all";
+                    enum "packets";
+                    enum "bytes";
+                  }
+                  description
+                    "all
+                     packets
+                     bytes
+                    ";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/art/art-options/art-option";
+                }
+              }
+            }
+            container transport {
+              list transport-options {
+                key "name";
+                leaf sequence-number {
+                  type string;
+                  description
+                    "sequence";
+                  default "58";
+                  config false;
+                }
+                leaf name {
+                  type string;
+                  description
+                    "string";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/transport/transport-options/name";
+                }
+                leaf transport-option {
+                  type enumeration {
+                    enum "tcp";
+                    enum "udp";
+                  }
+                  description
+                    "tcp
+                     udp
+                    ";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/transport/transport-options/transport-option";
+                }
+                leaf tcp-options {
+                  type enumeration {
+                    enum "flags";
+                    enum "option";
+                  }
+                  description
+                    "flags
+                     option
+                    ";
+                  when " ../transport-option = 'tcp'";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/transport/transport-options/tcp-options";
+                }
+              }
+            }
+            container timestamp {
+              list timestamp-options {
+                key "name";
+                leaf sequence-number {
+                  type string;
+                  description
+                    "sequence";
+                  default "59";
+                  config false;
+                }
+                leaf name {
+                  type string;
+                  description
+                    "string";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/timestamp/timestamp-options/name";
+                }
+                leaf timestamp-option {
+                  type enumeration {
+                    enum "absolute";
+                    enum "sys-uptime";
+                  }
+                  description
+                    "absolute
+                     sys-uptime
+                    ";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/timestamp/timestamp-options/timestamp-option";
+                }
+                leaf timestamps-time {
+                  type enumeration {
+                    enum "first";
+                    enum "last";
+                  }
+                  description
+                    "first
+                     last
+                    ";
+                  //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-records/flow-record/collect/timestamp/timestamp-options/timestamps-time";
+                }
+              }
+            }
+          }
+        }
+      }
+      container flow-monitors {
+        list flow-monitor {
+          key "name";
+          leaf sequence-number {
+            type string;
+            description
+              "sequence";
+            default "60";
+            config false;
+          }
+          leaf name {
+            type string-no-space;
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-monitors/flow-monitor/name";
+            description
+              "Enter Netflow Monitor Name";
+            mandatory true;
+          }
+          leaf record-type {
+            type enumeration {
+              enum "performance-monitor";
+              enum "mace";
+            }
+            description
+              "record type";
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-monitors/flow-monitor/record-type";
+          }
+          leaf description {
+            type string;
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-monitors/flow-monitor/description";
+            description
+              "string";
+          }
+          leaf record {
+            type string-no-space;
+            //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-monitors/flow-monitor/record";
+            description
+              "Flow Record";
+          }
+          container exporters {
+            list exporter {
+              key "exporter";
+              leaf sequence-number {
+                type string;
+                description
+                  "sequence";
+                default "61";
+                config false;
+              }
+              leaf exporter {
+                type string-no-space;
+                //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-monitors/flow-monitor/exporters/exporter/exporter";
+                description
+                  "Flow Exporter";
+              }
+            }
+          }
+          container cache {
+            list timeout {
+              key "timeout-type";
+              leaf sequence-number {
+                type string;
+                description
+                  "sequence";
+                default "63";
+                config false;
+              }
+              leaf timeout-type {
+                type enumeration {
+                  enum "active";
+                  enum "inactive";
+                  enum "update";
+                }
+                description
+                  "type of timeout";
+                //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-monitors/flow-monitor/cache/timeout/timeout-type";
+              }
+              leaf timeout-value {
+                type uint32;
+                description
+                  "0..4294967295";
+                //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-monitors/flow-monitor/cache/timeout/timeout-value";
+              }
+            }
+            container entries {
+              leaf sequence-number {
+                type string;
+                description
+                  "sequence";
+                default "64";
+                config false;
+              }
+              leaf entry-number {
+                type uint32;
+                description
+                  "0..4294967295";
+                //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-monitors/flow-monitor/cache/entries/entry-number";
+              }
+            }
+          }
+          container interfaces {
+            list interface {
+              key "interface";
+              leaf sequence-number {
+                type string;
+                description
+                  "sequence";
+                default "70";
+                config false;
+              }
+              leaf interface {
+                //type string;
+                type leafref {
+                  path "/ac:devices/ac:device[ac:id=current()/../../../../../../../device-ip]/if:interfaces/if:interface/if:name";
+                }
+                //n-ext:maps-to "/ac:devices/ac:device/netflow/flow-monitors/flow-monitor/interfaces/interface/interface";
+                description
+                  "Interface Name";
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  grouping legacy-netflow-def {
+    leaf source {
+      type string;
+      description
+        "Specify the interface for source address";
+      // n-ext:maps-to "/ac:devices/ac:device/legacy-netflow/source";
+    }
+  }
+
+  grouping local-credentials-def {
+    leaf name {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:local-credentials/local-credential/name";
+    }
+    leaf password {
+      type string-no-space;
+      description
+        "Enter Password";
+    }
+    leaf password-level {
+      type enumeration {
+        enum "0";
+        enum "7";
+      }
+      description
+        "Enter Password Level";
+    }
+    leaf enable-privilege {
+      type boolean;
+      description
+        "Set User Privilege Level";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:local-credentials/local-credential/enable-privilege";
+    }
+    leaf privilege-level {
+      type uint32;
+      description
+        "User privilege level";
+      when "../enable-privilege = 'true'";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:local-credentials/local-credential/privilege-level";
+    }
+    leaf secret-level {
+      type enumeration {
+        enum "0";
+        enum "5";
+      }
+      description
+        "Enter User Secret Level";
+    }
+    leaf privilege-secret {
+      type string-no-space;
+      description
+        "Enter User Secret Password";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:local-credentials/local-credential/privilege-secret";
+    }
+  }
+
+  grouping dhcp-server-def {
+    leaf pool-name {
+      type string-no-space;
+      description
+        "Enter DHCP Pool Name";
+      // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/pool-name";
+    }
+    leaf pool-vrf {
+      type string-no-space;
+      description
+        "Enter DHCP Pool VRF";
+      // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/pool-vrf";
+    }
+    leaf network {
+      type inet:ipv4-address;
+      description
+        "Enter DHCP Pool Subnet (eg: 10.0.0.0)";
+      // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/network";
+    }
+    leaf mask {
+      type inet:ipv4-address;
+      description
+        "Enter DHCP Pool Subnet Mask";
+      //  n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/mask";
+    }
+    leaf domain-name {
+      type string;
+      description
+        "Enter DHCP Pool Domain Name";
+      // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/domain-name";
+    }
+    leaf dhcp-server-ip {
+      type inet:ip-address;
+      description
+        "Valid IPv4/v6 Address (A.B.C.D for e.x: 172.16.1.1 or X::Y for e.x: 2001::1)";
+      // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/dhcp-server-ip";
+    }
+    leaf dns-server-ip {
+      type string-no-lead-trail-space;
+      description
+        "Enter DHCP Pool DNS Server IP(s)";
+      //  n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/dns-server-ip";
+    }
+    leaf default-router {
+      type inet:ipv4-address;
+      description
+        "Enter DHCP Pool Default Router";
+      //  n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/default-router";
+    }
+    leaf interface-name {
+      description
+        "DHCP Interface Name (Not generating commands, leave default for Cisco device)";
+      type string;
+      // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/interface-name";
+      default "Gig1";
+      config false;
+    }
+    leaf start-ip {
+      type string;
+      description
+        "string";
+      config false;
+      // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/start-ip";
+    }
+    leaf end-ip {
+      type string;
+      description
+        "string";
+      config false;
+      // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/end-ip";
+    }
+    leaf lease {
+      type uint32;
+      description
+        "Enter DHCP Pool Lease";
+    }
+    list excluded-address {
+      key "low-ipaddress";
+      leaf low-ipaddress {
+        type inet:ipv4-address;
+        description
+          "Enter DHCP Address Exclusion Low IP Address";
+        // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/excluded-address/low-ipaddress";
+      }
+      leaf high-ipaddress {
+        type inet:ipv4-address;
+        description
+          "Enter DHCP Address Exclusion High IP Address";
+        // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/excluded-address/high-ipaddress";
+      }
+      leaf vrf-name {
+        type string-no-space;
+        description
+          "Enter DHCP Address Exclusion VRF Name";
+        //  n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/excluded-address/vrf-name";
+      }
+    }
+    container dhcp-pools {
+      list dhcp-pool {
+        key "pool-name";
+        leaf pool-name {
+          type string-no-space;
+          description
+            "Enter DHCP Pool Name";
+          // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/pool-name";
+        }
+        leaf pool-vrf {
+          type string-no-space;
+          description
+            "Enter DHCP Pool VRF";
+          // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/pool-vrf";
+        }
+        leaf network {
+          type inet:ipv4-address;
+          description
+            "Enter DHCP Pool Subnet (eg: 10.0.0.0)";
+          // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/network";
+        }
+        leaf mask {
+          type inet:ipv4-address;
+          description
+            "Enter DHCP Pool Subnet Mask";
+          //  n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/mask";
+        }
+        leaf domain-name {
+          type string;
+          description
+            "Enter DHCP Pool Domain Name";
+          // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/domain-name";
+        }
+        leaf dhcp-server-ip {
+          type inet:ip-address;
+          description
+            "Valid IPv4/v6 Address (A.B.C.D for e.x: 172.16.1.1 or X::Y for e.x: 2001::1)";
+          // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/dhcp-server-ip";
+        }
+        leaf dns-server-ip {
+          type string-no-lead-trail-space;
+          description
+            "Enter DHCP Pool DNS Server IP(s)";
+          //  n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/dns-server-ip";
+        }
+        leaf default-router {
+          type inet:ipv4-address;
+          description
+            "Enter DHCP Pool Default Router";
+          //  n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/default-router";
+        }
+        leaf interface-name {
+          description
+            "DHCP Interface Name (Not generating commands, leave default for Cisco device)";
+          type string;
+          // n-ext:maps-to "/ac:devices/ac:device/l3:dhcp-server/interface-name";
+          default "Gig1";
+          config false;
+        }
+        leaf lease {
+          type uint32;
+          description
+            "Enter DHCP Pool Lease";
+        }
+      }
+    }
+  }
+
+  grouping snmp-def {
+    leaf snmp-ifmib-ifindex-persist {
+      type boolean;
+      description
+        "snmp-ifmib-ifindex-persist: True/False";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/snmp-ifmib-ifindex-persist";
+    }
+    leaf trap-source {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/trap-source";
+    }
+    leaf system-shutdown {
+      type boolean;
+      description
+        "Enable use of the SNMP reload command";
+      default "false";
+    }
+    list snmp-community {
+      key "community-string";
+      leaf community-string {
+        type string;
+        description
+          "string";
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/snmp-community-list/snmp-string";
+      }
+      leaf permision-type {
+        type permission-type;
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/snmp-community-list/permission-type";
+        description
+          "permision-type Ex. RO/RW";
+      }
+      leaf acl-name {
+        // type leafref {
+        // path "/ac:services/tclday0config:day1services/day1service[device-ip=current()/../../../device-ip]/named-access-lists/acl/acl-name";
+        // }
+        type string;
+        description
+          "string";
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/acl-name";
+      }
+    }
+    list snmp-host {
+      key "host";
+      leaf host {
+        type inet:ipv4-address;
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/snmp-server/snmp-server-ip";
+        description
+          "Host IP Address Ex. 172.16.22.2";
+      }
+      leaf version {
+        type string;
+        description
+          "string eg-- 2c";
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/snmp-server/snmp-version";
+      }
+      leaf snmp-community {
+        type string;
+        description
+          "string";
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/snmp-server/community";
+      }
+    }
+    list snmp-traps {
+      key "trap";
+      leaf trap {
+        type string;
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/snmp-traps/snmp-trap";
+        description
+          "snmp traps Ex. ospf errors";
+      }
+    }
+    list snmp-mib {
+      key "mib-persistence";
+      leaf mib-persistence {
+        type enumeration {
+          enum "cbqos";
+          enum "circuit";
+          enum "dsmib";
+        }
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/snmp-mib/mib-persistence";
+        description
+          "
+           cbqos    CBQOS MIB index persistence
+             circuit  Circuit MIB persistence
+             dsmib    DiffServ MIB persistence
+          ";
+      }
+    }
+  }
+
+  grouping aaa-group-def {
+    leaf tacacs-server-group {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:aaa-group/tacacs-server-group";
+    }
+    leaf source-interface {
+      type leafref {
+        path "/ac:devices/ac:device[ac:id=current()/../../device-ip]/if:interfaces/if:interface/if:name";
+      }
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:aaa-group/source-interface";
+    }
+    leaf aaa-new-model {
+      type boolean;
+      default "false";
+      description
+        " Enable NEW access control commands and functions.(Disables OLD commands.)";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:aaa-group/aaa-new-model";
+    }
+    list aaa-servers-private {
+      key "aaa-server-ip";
+      leaf aaa-server-ip {
+        type inet:ipv4-address;
+        description
+          "Valid IPv4 Address (A.B.C.D for e.x: 172.16.1.1)";
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:aaa-group/bdc:aaa-servers-private/aaa-server-private";
+      }
+      leaf privilege-level {
+        type uint32;
+        description
+          "0..15";
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:aaa-group/bdc:aaa-servers-private/privilege-level";
+      }
+      leaf privilege-key {
+        type string;
+        description
+          "string";
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:aaa-group/bdc:aaa-servers-private/privilege-key";
+      }
+    }
+  }
+
+  grouping tacacs-conf-def {
+    leaf sequence-number {
+      type string;
+      description
+        "sequence";
+      default "120";
+      config false;
+    }
+    leaf tacacs-server-group {
+      type union {
+        type leafref {
+          path "/ac:services/tclday0config:day1services/day1service[name=current()/../../name]/aaa/tacacs-server-group";
+        }
+        type string-no-space;
+      }
+      description
+        "Select AAA TACACS+ Server Group";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:tacacs-conf/tacacs-server-group";
+    }
+    leaf timeout {
+      type uint32;
+      description
+        "Enter TACACS+ Server Timeout";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:tacacs-conf/timeout";
+    }
+    leaf delete-dummy-tacacs-route {
+      //type inet:ipv4-address;
+      type leafref {
+        path "/ac:devices/ac:device[ac:id=current()/../../device-ip]/l3:routes/l3:route/l3:dest-ip-address";
+      }
+      description
+        "Select TACACS+ Servers Dummy Static Route Destination Subnet to delete (eg: 115.114.227.248)
+         Mask is by default set to 255.255.255.252";
+      // n-ext:maps-to "/ac:devices/ac:device/l3:routes/l3:route";
+      when "../dummy-tacacs-route-is-vrf = 'false'";
+    }
+    leaf dummy-tacacs-route-is-vrf {
+      type boolean;
+      description
+        "Check if the dummy TACACS Route is in a VRF";
+      config false;
+    }
+    leaf dummy-tacacs-route-vrf-name {
+      type leafref {
+        path "/ac:devices/ac:device[ac:id=current()/../../device-ip]/l3:vrfs/l3:vrf/l3:name";
+      }
+      description
+        "dummy-tacacs-route-vrf-name";
+      when "../dummy-tacacs-route-is-vrf = 'true'";
+      config false;
+    }
+    leaf delete-dummy-tacacs-route-vrf {
+      type inet:ipv4-address;
+      description
+        "Enter TACACS+ Servers Dummy VRF Static Route Destination Subnet to delete (eg: 115.114.227.248)
+         Mask is by default set to 255.255.255.252";
+      when "../dummy-tacacs-route-is-vrf = 'true'";
+      config false;
+    }
+  }
+
+  grouping cpe-finalize-def {
+    leaf sequence-number {
+      type string;
+      description
+        "sequence";
+      default "140";
+      config false;
+    }
+    leaf tacacs-credential-set {
+      type leafref {
+        path "/ac:credentials/ac:credential-sets/ac:credential-set/ac:name";
+      }
+      description
+        "tacacs-credential-set";
+      config false;
+    }
+    leaf device-mgmt-ip {
+      type inet:ipv4-address;
+      description
+        "Valid IPv4 Address (A.B.C.D for e.x: 172.16.1.1)";
+      config false;
+    }
+  }
+
+  grouping device-features {
+    leaf cdp {
+      type flag;
+      description
+        "cdp";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/cdp";
+    }
+    leaf domain-lookup {
+      type flag;
+      description
+        "domain-lookup";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/domain-lookup";
+    }
+    leaf tcp-small-servers {
+      type flag;
+      description
+        "tcp-small-servers";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/tcp-small-servers";
+    }
+    leaf udp-small-servers {
+      type flag;
+      description
+        "udp-small-servers";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/udp-small-servers";
+    }
+    leaf finger {
+      type flag;
+      description
+        "finger";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/finger";
+    }
+    leaf source-route {
+      type flag;
+      description
+        "source-route";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/source-route";
+    }
+    leaf bootp-server {
+      type flag;
+      description
+        "bootp-server";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/bootp-server";
+    }
+    leaf http-server {
+      type flag;
+      description
+        "http-server";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/http-server";
+    }
+    leaf http-secure-server {
+      type flag;
+      description
+        "http-secure-server";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/http-secure-server";
+    }
+    leaf banner-exec {
+      type flag;
+      description
+        "banner-exec";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/banner-exec";
+    }
+    leaf banner-exec-string {
+      type string;
+      description
+        "banner-exec-string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/banner-exec";
+      when "../banner-exec = 'enable'";
+    }
+    leaf banner-login {
+      type flag;
+      description
+        "banner-login";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/banner-login";
+    }
+    leaf banner-login-string {
+      type string;
+      description
+        "banner-login-string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/banner-exec";
+      when "../banner-login = 'enable'";
+    }
+    leaf banner-motd {
+      type flag;
+      description
+        "banner-motd";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/banner-motd";
+    }
+    leaf banner-motd-string {
+      type string;
+      description
+        "banner-motd-string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:features/banner-exec";
+      when "../banner-motd = 'enable'";
+    }
+  }
+
+  grouping clock-def {
+    leaf clock-time-zone {
+      type string-no-lead-trail-space;
+      description
+        "Enter Clock Timezone Name";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:clock/timezone";
+    }
+    leaf hours {
+      type int8 {
+        range "-12..14";
+      }
+      description
+        "Enter Clock Timezone Hours Offset";
+    }
+    leaf minutes {
+      type uint8 {
+        range "0..45";
+      }
+      description
+        "Enter Clock Timezone Minutes Offset";
+    }
+  }
+
+  grouping banner-def {
+    leaf login-delimiter {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device[ac:id=current()/../../../device-ip]/bdc:banner/login-delimiter";
+    }
+    leaf banner-login {
+      type string;
+      n-ext-ui:ncx-ext-multi-line "true";
+      description
+        "Standard Banner";
+      // n-ext:maps-to "/ac:devices/ac:device[ac:id=current()/../../../device-ip]/bdc:banner/login-message";
+    }
+    leaf motd-delimiter {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device[ac:id=current()/../../../device-ip]/bdc:banner/motd-delimiter";
+    }
+    leaf banner-motd {
+      type string;
+      n-ext-ui:ncx-ext-multi-line "true";
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device[ac:id=current()/../../../device-ip]/bdc:banner/motd-message";
+    }
+  }
+
+  grouping ntp-def {
+    leaf ntp-source-interface {
+      type leafref {
+        path "/ac:devices/ac:device[ac:id=current()/../../device-ip]/if:interfaces/if:interface/if:name";
+      }
+      description
+        "string";
+      n-ext:maps-to "/ac:devices/ac:device/bdc:ntp/ntp-source-interface";
+    }
+    leaf update-calendar {
+      type boolean;
+      description
+        "update-calendar: True/False";
+      default "false";
+      //n-ext:maps-to "/ac:devices/ac:device/bdc:ntp/update-calendar";
+    }
+    list ntp-server {
+      key "ntp-server-ip";
+      leaf ntp-server-ip {
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:ntp/ntp-server/ntp-server-address";
+        description
+          "Valid IPv4 Address (A.B.C.D for e.x: 172.16.1.1)";
+        type inet:ipv4-address;
+      }
+    }
+  }
+
+  grouping console-def {
+    leaf console-line {
+      type uint32;
+      description
+        "0..4294967295";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:console/console-line";
+    }
+    leaf exec-timeout {
+      type uint32;
+      description
+        "0..4294967295";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:console/exec-timeout";
+    }
+    leaf privilege-level {
+      type uint32;
+      description
+        "0..4294967295";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:console/privilege-level";
+    }
+    leaf logging-synchronous {
+      type boolean;
+      description
+        "logging-synchronous: True/False";
+      default "false";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:console/logging-synchronous";
+    }
+    leaf no-password {
+      type boolean;
+      description
+        "no-password: True/False";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:console/no-password";
+    }
+    leaf auth-type {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:console/auth-type";
+    }
+  }
+
+  grouping auxiliary-port-def {
+    leaf auxiliary-port-line {
+      type uint32;
+      description
+        "0..4294967295";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:auxiliary-port/auxiliary-port-line";
+    }
+    leaf no-exec {
+      type boolean;
+      description
+        "no-exec: True/False";
+      default "false";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:auxiliary-port/no-exec";
+    }
+  }
+
+  grouping syslog-def {
+    leaf logging-source-interface {
+      type leafref {
+        path "/ac:devices/ac:device[ac:id=current()/../../device-ip]/if:interfaces/if:interface/if:name";
+      }
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:logging/interface-name";
+    }
+    leaf buffer-size {
+      type uint32;
+      description
+        "0..4294967295";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:logging/buffer-size";
+    }
+    leaf logging-trap {
+      type enumeration {
+        enum "emergencies";
+        enum "alerts";
+        enum "critical";
+        enum "errors";
+        enum "warnings";
+        enum "notifications";
+        enum "informational";
+        enum "debugging";
+      }
+      description
+        "emergencies
+         alerts
+         critical
+         errors
+         warnings
+         notifications
+         informational
+         debugging
+        ";
+      n-ext:ignore-parsing;
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:logging/logging-trap";
+    }
+    leaf logging-facility {
+      type enumeration {
+        enum "auth";
+        enum "cron";
+        enum "daemon";
+        enum "kern";
+        enum "local0";
+        enum "local1";
+        enum "local2";
+        enum "local3";
+        enum "local4";
+        enum "local5";
+        enum "local6";
+        enum "local7";
+        enum "lpr";
+        enum "mail";
+        enum "news";
+        enum "sys10";
+        enum "sys11";
+        enum "sys12";
+        enum "sys13";
+        enum "sys14";
+        enum "sys9";
+        enum "syslog";
+        enum "user";
+        enum "uucp";
+      }
+      description
+        "auth
+         cron
+         daemon
+         kern
+         local0
+         local1
+         local2
+         local3
+         local4
+         local5
+         local6
+         local7
+         lpr
+         mail
+         news
+         sys10
+         sys11
+         sys12
+         sys13
+         sys14
+         sys9
+         syslog
+         user
+         uucp
+        ";
+    }
+    leaf no-logging-console {
+      type boolean;
+      description
+        "no-logging-console: True/False";
+    }
+    list logging-host {
+      key "host";
+      leaf host {
+        type inet:ipv4-address;
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:logging/logging-hosts/ip-address";
+        description
+          "Enter logging host IP address";
+      }
+    }
+  }
+
+  grouping service-timestamps-def {
+    leaf service-timestamps-debug {
+      type boolean;
+      description
+        "service-timestamps-debug: True/False";
+      default "true";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:service-time-stamps/service-timestamps-debug";
+    }
+    leaf service-timestamps-log {
+      type boolean;
+      description
+        "service-timestamps-log: True/False";
+      default "true";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:service-time-stamps/service-timestamps-log";
+    }
+    leaf service-password-encryption {
+      type boolean;
+      description
+        "service-password-encryption: True/False";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:service-time-stamps/service-password-encryption";
+      default "true";
+    }
+    leaf enable-secret {
+      type boolean;
+      description
+        "Enable/Disable enable-secret features";
+      default "false";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:service-time-stamps/enable-secret";
+    }
+    leaf enable-secret-password {
+      type string;
+      description
+        "enable-secret password ";
+      when "../enable-secret = 'true'";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:service-time-stamps/enable-secret-password";
+    }
+    leaf tcp-keepalives-in {
+      type boolean;
+      description
+        "Generate keepalives on idle incoming network connections";
+      default "false";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:service-time-stamps/tcp-keepalives-in";
+    }
+  }
+
+  grouping dns-def {
+    leaf lookup-source-interface {
+      type leafref {
+        path "/ac:devices/ac:device[ac:id=current()/../../device-ip]/if:interfaces/if:interface/if:name";
+      }
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/dns:dns-server/lookup-source-interface";
+    }
+    leaf domain-name {
+      type string;
+      description
+        "string eg- example.com";
+      // n-ext:maps-to "/ac:devices/ac:device/dns:dns-server/domain-name";
+    }
+    list name-server {
+      key "name-server";
+      leaf name-server {
+        // n-ext:maps-to "/ac:devices/ac:device/dns:dns-server/name-server/server";
+        description
+          "Valid IPv4 Address (A.B.C.D for e.x: 172.16.1.1)";
+        type inet:ipv4-address;
+      }
+    }
+  }
+
+  grouping ssh-def {
+    leaf source-interface {
+      type leafref {
+        path "/ac:devices/ac:device[ac:id=current()/../../device-ip]/if:interfaces/if:interface/if:name";
+      }
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:ssh/source-interface";
+    }
+    leaf ssh-version {
+      type string;
+      description
+        "string eg-- 2";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:ssh/version";
+    }
+    leaf scp-enable {
+      type boolean;
+      description
+        "enable/disable scp server";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:ssh/scp-enable";
+      default "false";
+    }
+  }
+
+  grouping vty-def {
+    leaf name {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/name";
+    }
+    leaf timeout-in-sec {
+      type uint32;
+      description
+        "0..4294967295";
+      default "0";
+    }
+    leaf timeout-in-min {
+      type uint16;
+      description
+        "0..65535";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/timeout";
+      default "30";
+    }
+    leaf min-vty {
+      type uint16;
+      description
+        "0..65535";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/min-vty";
+      default "0";
+    }
+    leaf max-vty {
+      type uint16;
+      description
+        "0..65535";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/max-vty";
+      default "4";
+    }
+    leaf transport-type {
+      type enumeration {
+        enum "ssh";
+        enum "telnet";
+      }
+      description
+        "ssh
+         telnet
+        ";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/transport-types-in";
+    }
+    leaf acl {
+      //type leafref {
+      //path "/ac:services/tclday0config:day1services/day1service[device-ip=current()/../../../device-ip]/named-access-lists/acl/acl-name";
+      //}
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/acl-rule-number";
+    }
+    leaf auth-type {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/auth-type";
+    }
+    leaf vrf-also {
+      type boolean;
+      description
+        "vrf-also: True/False";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/vrf";
+    }
+    leaf logging-synchronous {
+      type boolean;
+      description
+        "logging-synchronous: True/False";
+      default "false";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/logging-synchronous";
+    }
+    leaf history-size {
+      type uint32;
+      description
+        "0..4294967295";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/history-size";
+    }
+    leaf no-privilege-level {
+      type uint32;
+      description
+        "0..4294967295";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/no-privilege-level";
+    }
+    leaf no-password {
+      type boolean;
+      description
+        "no-password: True/False";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:vty-configs/vty-config/no-password";
+    }
+  }
+
+  typedef source-ip {
+    type enumeration {
+      enum "any";
+    }
+  }
+
+  grouping access-lists-def {
+    list acl {
+      key "acl-name";
+      leaf acl-name {
+        type string-no-space;
+        description
+          "Enter Standard ACL Name";
+        // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/name";
+      }
+      leaf acl-type {
+        type enumeration {
+          enum "standard";
+          //enum "extended";
+        }
+        description
+          "Only Standard ACL Rules Accepted in Day1 Mgmt Service\n";
+        // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-type";
+      }
+      leaf remark {
+        type string;
+        description
+          "ACL Remark";
+        // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/start-remark";
+      }
+      list match-condition {
+        key "match-condition-name";
+        leaf match-condition-name {
+          type string-no-lead-trail-space;
+          description
+            "Enter ACL Rule Name
+             This is an internal field for Anuta NCX
+            ";
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/name";
+        }
+        leaf sequence-number {
+          type uint32 {
+            range "1..2147483647";
+          }
+          description
+            "Enter ACL Rule Sequence Number";
+        }
+        leaf source-condition-type {
+          type source-condition-type;
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/source-condition-type";
+          description
+            "Enter source-ipv4-address eaither host IP address or 'any'";
+        }
+        leaf cidr {
+          type boolean;
+          description
+            "cidr: True/False";
+          default "false";
+        }
+        leaf cidr-value {
+          type inet:ipv4-prefix;
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/source-ip";
+          description
+            "Enter source-ipv4-address eaither host IP address or 'any'";
+          when "../cidr = 'true'";
+        }
+        leaf source-ipv4-address {
+          type inet:ipv4-address;
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/source-ip";
+          description
+            "Enter source-ipv4-address eaither host IP address or 'any'";
+          when "../cidr = 'false'";
+        }
+        leaf source-ipv4-address-mask {
+          type inet:ipv4-address;
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/source-mask";
+          description
+            "Enter source-ipv4-address either host IP address or 'any'";
+          when "../source-condition-type = 'cidr' and ../cidr = 'false'";
+        }
+        leaf dest-condition-type {
+          type source-condition-type;
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/dest-condition-type";
+          description
+            "Enter dest-ipv4-address eaither host IP address or 'any'";
+          config false;
+        }
+        leaf cidr-destination-value {
+          type inet:ipv4-prefix;
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/dest-ip";
+          description
+            "Enter destination-ipv4-address either host IP address or 'any'";
+          when "../cidr = 'true'";
+          config false;
+        }
+        leaf destination-ipv4-address {
+          type inet:ipv4-address;
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/dest-ip";
+          description
+            "Enter destination-ipv4-address eaither host IP address or 'any'";
+          when "../cidr = 'false'";
+          config false;
+        }
+        leaf destination-ipv4-address-mask {
+          type inet:ipv4-address;
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/dest-mask";
+          description
+            "Enter destination-ipv4-address eaither host IP address or 'any'";
+          when "../dest-condition-type = 'cidr' and ../cidr = 'false'";
+          config false;
+        }
+        leaf action {
+          type action-type;
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/action";
+          description
+            "Select action either 'permit' or 'deny'";
+        }
+        leaf match-packets {
+          type match-packets-type;
+          // n-ext:maps-to "/ac:devices/ac:device/acl:access-lists/access-list/acl-rules/acl-rule/match-packets";
+          description
+            "Match Packets Type / Extra ACL Rule Options";
+        }
+      }
+    }
+  }
+
+  grouping http-def {
+    leaf no-ip-http-server {
+      type boolean;
+      description
+        "no-ip-http-server: True/False";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:http/no-ip-http-server";
+      default "true";
+    }
+    leaf no-ip-http-secure-server {
+      type boolean;
+      description
+        "no-ip-http-secure-server: True/False";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:http/no-ip-http-secure-server";
+      default "true";
+    }
+  }
+
+  grouping license-def {
+    leaf license-token {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:license/license-token";
+    }
+    leaf dest-address {
+      type string;
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:license/dest-address";
+      description
+        " Example, https://<smart license satellite server IP>:443/Transportgateway/services/DeviceRequestHandler";
+    }
+    leaf source-interface {
+      type leafref {
+        path "/ac:devices/ac:device[ac:id=current()/../../device-ip]/if:interfaces/if:interface/if:name";
+      }
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:license/source-interface";
+    }
+  }
+
+  typedef matching-prefix-type {
+    type string {
+      pattern "^(([0-9])|([1-2][0-9])|(3[0-2]))$";
+    }
+  }
+
+  grouping prefix-list-def {
+    leaf prefix-list-name {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/l3:ip-prefixlist-list/ip-prefixlist/name";
+    }
+    list prefix {
+      key "prefix-name";
+      leaf prefix-name {
+        // n-ext:maps-to "/ac:devices/ac:device/l3:ip-prefixlist-list/ip-prefixlist/ip-prefixlist-entries/ip-prefixlist-entry/prefix-name";
+        description
+          "string";
+        type string;
+      }
+      leaf ipv4-prefix {
+        // n-ext:maps-to "/ac:devices/ac:device/l3:ip-prefixlist-list/ip-prefixlist/ip-prefixlist-entries/ip-prefixlist-entry/subnet";
+        description
+          "Valid IPv4 Prefix (A.B.C.D/Z for e.x: 172.16.1.0/24)";
+        type inet:ipv4-prefix;
+      }
+      leaf num {
+        type matching-prefix-type;
+        description
+          "string";
+        // n-ext:maps-to "/ac:devices/ac:device/l3:ip-prefixlist-list/ip-prefixlist/ip-prefixlist-entries/ip-prefixlist-entry/num";
+      }
+      leaf compare {
+        type string;
+        description
+          "string";
+        default "le";
+        // n-ext:maps-to "/ac:devices/ac:device/l3:ip-prefixlist-list/ip-prefixlist/ip-prefixlist-entries/ip-prefixlist-entry/compare";
+      }
+      leaf action {
+        type enumeration {
+          enum "permit";
+          enum "deny";
+        }
+        description
+          "permit
+           deny
+          ";
+        // n-ext:maps-to "/ac:devices/ac:device/l3:ip-prefixlist-list/ip-prefixlist/ip-prefixlist-entries/ip-prefixlist-entry/condition";
+      }
+      leaf rule-num {
+        type uint32;
+        description
+          "0..4294967295";
+        // n-ext:maps-to "/ac:devices/ac:device/l3:ip-prefixlist-list/ip-prefixlist/ip-prefixlist-entries/ip-prefixlist-entry/rule-num";
+      }
+    }
+  }
+
+  grouping call-home-def {
+    leaf profile {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:call-home/profile";
+    }
+    leaf destination {
+      type string;
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:call-home/destination";
+      description
+        " Example, https://<smart license satellite server IP>:443/Transportgateway/services/DeviceRequestHandler";
+    }
+    leaf no-destination {
+      type string;
+      // n-ext:maps-to "/ac:devices/ac:device/bdc:call-home/no-destination";
+      description
+        " Example, https://tools.cisco.com/its/service/oddce/services/DDCEService";
+    }
+  }
+
+  grouping class-map-def {
+    leaf name {
+      type string;
+      description
+        "string";
+      mandatory true;
+      // n-ext:maps-to "/ac:devices/device/qos:class-maps/class-map/name";
+    }
+    leaf description {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/device/qos:class-maps/class-map/description";
+    }
+    leaf match-type {
+      type match-type-def;
+      description
+        "match-any
+         match-all
+        ";
+      mandatory true;
+      // n-ext:maps-to "/ac:devices/device/qos:class-maps/class-map[name=current()/../name]/match-type";
+    }
+  }
+
+  grouping policy-map-def {
+    leaf name {
+      type string;
+      description
+        "string";
+      mandatory true;
+      // n-ext:maps-to "/ac:devices/device/qos:policy-maps/policy-map/name";
+    }
+    leaf description {
+      type string;
+      description
+        "string";
+      // n-ext:maps-to "/ac:devices/device/qos:policy-maps/policy-map/description";
+    }
+    leaf type {
+      type policy-map-type;
+      description
+        "control-plane
+         network-qos
+         qos
+         queuing
+        ";
+      // n-ext:maps-to "/ac:devices/device/qos:policy-maps/policy-map/type";
+    }
+    list class-entry {
+      key "class-name";
+      leaf class-name {
+        type string;
+        description
+          "string";
+        // type leafref {
+        // path "../../../class-maps/class-map/name";
+        // require-instance false;
+        // }
+        mandatory true;
+        // n-ext:maps-to "/ac:devices/device/qos:policy-maps/policy-map[name=current()/../../../name]/class-entry/class-name";
+      }
+      leaf flow-monitor-name {
+        type string;
+        description
+          "string";
+        // n-ext:maps-to "/ac:devices/device/qos:policy-maps/policy-map[name=current()/../../../name]/class-entry/flow-monitor-name";
+      }
+    }
+  }
+
+  grouping common-config-def {
+    container snmp {
+      uses snmp-def;
+    }
+    container clock {
+      uses clock-def;
+    }
+    container banner {
+      uses banner-def;
+    }
+    container ntp {
+      leaf access-group-name {
+        type string;
+        description
+          "string eg--NTP_Serve";
+        // n-ext:maps-to "/ac:devices/ac:device/bdc:ntp/ntp";
+      }
+      uses ntp-def;
+    }
+    container syslog {
+      uses syslog-def;
+    }
+    container service-timestamps {
+      uses service-timestamps-def;
+    }
+    container vty-conf {
+      list vty {
+        key "name";
+        uses vty-def;
+      }
+    }
+    container named-access-lists {
+      uses access-lists-def;
+    }
+    container console {
+      uses console-def;
+    }
+    container eem-scripts {
+      uses eem-scripts-def;
+    }
+    container class-maps {
+      list class-map {
+        key "name";
+        uses class-map-def;
+      }
+    }
+    container policy-maps {
+      list policy-map {
+        key "name";
+        uses policy-map-def;
+      }
+    }
+    container auxiliary-port {
+      uses auxiliary-port-def;
+    }
+    container features {
+      uses device-features;
+    }
+    container aaa {
+      uses aaa-group-def;
+    }
+    container tacacs {
+      uses tacacs-conf-def;
+    }
+    container cpe-finalize {
+      uses cpe-finalize-def;
+    }
+    container hostname {
+      uses hostname-def;
+    }
+    container license {
+      uses license-def;
+    }
+    container dns {
+      uses dns-def;
+    }
+    container call-home {
+      uses call-home-def;
+    }
+    container ssh {
+      uses ssh-def;
+    }
+    container tftp {
+      uses tftp-def;
+    }
+    container netflow {
+      uses netflow-def;
+    }
+    container local-credentials {
+      list local-credential {
+        key "name";
+        uses local-credentials-def;
+      }
+    }
+    container dhcp-server {
+      uses dhcp-server-def;
+    }
+  }
+
+  grouping route-maps-def {
+    container route-maps {
+      list route-map {
+        key "route-map-name";
+        leaf route-map-name {
+          type string;
+          description
+            "string";
+          // n-ext:maps-to "/ac:devices/ac:device/l3:route-maps/route-map/name";
+        }
+        leaf description {
+          type string;
+          description
+            "string";
+        }
+        list route-map-entries {
+          key "sequence-number";
+          leaf sequence-number {
+            type uint16 {
+              range "0..65535";
+            }
+            description
+              "0..65535";
+            //n-ext:maps-to "/ac:devices/ac:device/l3:route-maps/route-map/route-map-entries/seq";
+          }
+          leaf description {
+            type string;
+            description
+              "string";
+          }
+          leaf action {
+            type action-type;
+            description
+              "permit
+               deny
+              ";
+            //n-ext:maps-to "/ac:devices/ac:device/l3:route-maps/route-map/route-map-entries/action";
+          }
+          leaf continue {
+            type uint16 {
+              range "0..65535";
+            }
+            description
+              "0..65535";
+          }
+          list match-condition {
+            key "condition-type value";
+            leaf condition-type {
+              type route-map-condition-types;
+              description
+                "interface
+                 tag
+                 acl
+                 prefix-list
+                 source-protocol
+                 community
+                 metric
+                 as-path
+                 next-hop
+                ";
+              //n-ext:maps-to "/ac:devices/ac:device/l3:route-maps/route-map/route-map-entries/match-condition/condition-type";
+            }
+            leaf value {
+              type string;
+              description
+                "string";
+              //n-ext:maps-to "/ac:devices/ac:device/l3:route-maps/route-map/route-map-entries/match-condition/value";
+            }
+          }
+          list set-action {
+            key "set-type value";
+            leaf set-type {
+              type route-map-set-types;
+              description
+                "local-preference
+                 metric
+                 tag
+                 community
+                 next-hop
+                 as-path-prepend
+                ";
+              //n-ext:maps-to "/ac:devices/ac:device/l3:route-maps/route-map/route-map-entries/set-action/set-type";
+            }
+            leaf value {
+              type string;
+              description
+                "string";
+              //n-ext:maps-to "/ac:devices/ac:device/l3:route-maps/route-map/route-map-entries/set-action/value";
+            }
+          }
+        }
+      }
+    }
+  }
+
+  grouping device-pairs-def {
+    uses sm:resource-def;
+    leaf primary-device-ip {
+      type inet:ipv4-address;
+      description
+        "Valid IPv4 Address (A.B.C.D for e.x: 172.16.1.1)";
+    }
+    leaf secondary-device-ip {
+      type inet:ipv4-address;
+      description
+        "Valid IPv4 Address (A.B.C.D for e.x: 172.16.1.1)";
+    }
+    leaf subscription-id {
+      type string;
+      description
+        "string";
+    }
+    leaf location {
+      type string;
+      description
+        "string";
+    }
+    leaf credential-set {
+      type leafref {
+        path "/ac:credentials/ac:credential-sets/ac:credential-set/ac:name";
+      }
+      description
+        "credential-set";
+      mandatory true;
+    }
+    leaf license-token {
+      type string;
+      description
+        "string";
+    }
+    leaf license-server-ip {
+      type inet:ipv4-address;
+      description
+        "Valid IPv4 Address (A.B.C.D for e.x: 172.16.1.1)";
+    }
+    leaf push-day1-configs {
+      type boolean;
+      description
+        "push-day1-configs: True/False";
+      default "true";
+    }
+    leaf day1-config-profile {
+      type leafref {
+        path "../../day1-profiles/name";
+      }
+      description
+        "day1-config-profile";
+      when "../push-day1-configs = 'true'";
+    }
+  }
+
+  augment "/ac:services" {
+    container day1services {
+      list day1service {
+        n-ext:ncx-service;
+        key "name";
+        leaf name {
+          type string-no-space;
+          description
+            "Enter Service Name";
+          mandatory true;
+        }
+        leaf created-on {
+          type string;
+          description
+            "string";
+          config false;
+        }
+        leaf created-by {
+          type string;
+          description
+            "string";
+          config false;
+        }
+        leaf device-ip {
+          type leafref {
+            path "/ac:devices/ac:device/ac:id";
+          }
+          mandatory true;
+          description
+            "Select Device Name";
+          n-ext-ui:ncx-ext-pagination "paginate";
+        }
+        leaf vrf {
+          type string;
+          description
+            "string";
+        }
+        uses common-config-def;
+        container tacacs-user-connectivity {
+          list tacacs-user-credentials {
+            key "name";
+            leaf name {
+              type string;
+              description
+                "string";
+            }
+            leaf username {
+              type string;
+              description
+                "string";
+            }
+            leaf password {
+              type nct:password;
+              description
+                "string";
+            }
+            leaf result {
+              type enumeration {
+                enum "pass";
+                enum "fail";
+              }
+              description
+                "pass
+                 fail
+                ";
+            }
+          }
+        }
+      }
+    }
+  }
+}
