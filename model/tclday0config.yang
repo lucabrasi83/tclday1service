@@ -1217,6 +1217,11 @@ module tclday0config {
           "string";
         // n-ext:maps-to "/ac:devices/ac:device/bdc:snmp/acl-name";
       }
+      leaf add-monolith-snmpv3 {
+        type boolean;
+        description
+          "Check to add SNMPv3 Config template for Monolith";
+      }
     }
     list snmp-host {
       key "host";

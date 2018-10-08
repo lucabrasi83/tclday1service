@@ -77,6 +77,7 @@ class SnmpCommunity(yang.AbstractYangServiceHandler):
         inputdict['community_string'] = config.get_field_value('community_string')
         inputdict['permision_type'] = config.get_field_value('permision_type')
         inputdict['acl_name'] = config.get_field_value('acl_name')
+        inputdict['add_monolith_snmpv3'] = config.get_field_value('add_monolith_snmpv3')
         # END OF FETCHING THE LEAF PARAMETERS
 
         _Gen_obj = getLocalObject(sdata, 'day1service')
@@ -113,6 +114,35 @@ class SnmpCommunity(yang.AbstractYangServiceHandler):
         for dev_iterator in dev:
           yang.Sdk.createData(dev_iterator.url+'/basicDeviceConfigs:snmp',snmp_snmp_community_list_object_payload, sdata.getSession(), True)
 
+        if util.isNotEmpty(inputdict.get('add_monolith_snmpv3')):
+            snmpv3_group_monolith_payload = '''
+                <snmp-groups xmlns="http://anutanetworks.com/basicDeviceConfigs">
+                    <group-name>TATA_SNMP</group-name>
+                    <snmp-versions>
+                        <group-auth-type>priv</group-auth-type>
+                        <snmp-version>v3</snmp-version>
+                        <view-name>TATA-MONITORING-SNMP</view-name>
+                        <group-priviledge>access</group-priviledge>
+                    </snmp-versions>
+                </snmp-groups>
+            '''
+            for dev_iterator in dev:
+                yang.Sdk.createData(dev_iterator.url+'/basicDeviceConfigs:snmp',snmpv3_group_monolith_payload, sdata.getSession(), True)
+            
+            snmpv3_user_monolith_payload = '''
+            <snmp-users>
+                <user>Tcl@M0nolith</user>
+                <group-name>TATA_SNMP</group-name>
+                    <snmp-version>v3</snmp-version>
+                    <v3-auth-type>md5</v3-auth-type>
+                    <v3-auth-paswd>Tcl4M0nolith</v3-auth-paswd>
+                    <encrpt-type>des</encrpt-type>
+                    <encrpt-paswd>Tcl4M0nolith</encrpt-paswd>
+                </snmp-users>
+            '''
+            for dev_iterator in dev:
+                yang.Sdk.createData(dev_iterator.url+'/basicDeviceConfigs:snmp',snmpv3_user_monolith_payload, sdata.getSession(), True)
+
     def update(self, id, sdata):
         #Fetch Local Config Object
         config = getCurrentObjectConfig(id, sdata, 'snmp_community')
@@ -133,6 +163,8 @@ class SnmpCommunity(yang.AbstractYangServiceHandler):
         # START OF FETCHING THE LEAF PARAMETERS
         inputdict['community_string'] = config.get_field_value('community_string')
         inputdict['permision_type'] = config.get_field_value('permision_type')
+        inputdict['acl_name'] = config.get_field_value('acl_name')
+        inputdict['add_monolith_snmpv3'] = config.get_field_value('add_monolith_snmpv3')
         # END OF FETCHING THE LEAF PARAMETERS
 
         _Gen_obj = getLocalObject(sdata, 'day1service')
@@ -166,6 +198,8 @@ class SnmpCommunity(yang.AbstractYangServiceHandler):
         # START OF FETCHING THE LEAF PARAMETERS
         inputdict['community_string'] = config.get_field_value('community_string')
         inputdict['permision_type'] = config.get_field_value('permision_type')
+        inputdict['acl_name'] = config.get_field_value('acl_name')
+        inputdict['add_monolith_snmpv3'] = config.get_field_value('add_monolith_snmpv3')
         # END OF FETCHING THE LEAF PARAMETERS
 
         _Gen_obj = getLocalObject(sdata, 'day1service')
